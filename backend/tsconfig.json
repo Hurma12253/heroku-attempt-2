@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"removeComments": true,
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"typeRoots": ["types", "node_modules/@types"]
+	},
+	"files": ["./node_modules/@types/express/index.d.ts"],
+	"include": [],
+	"exclude": ["node_modules"]
+}
