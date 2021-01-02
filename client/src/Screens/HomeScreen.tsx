@@ -2,9 +2,9 @@ import React from 'react'
 
 const HomeScreen = () => {
     return (
-        <div>
-            lolkek
-        </div>
+        <h2>
+            Some content
+        </h2>
     )
 }
 
