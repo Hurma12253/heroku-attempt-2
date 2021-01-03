@@ -23,11 +23,12 @@ export interface IUserState {
 	users: ISavedUser[]
 }
 
+const userInfoFromLocalStorage = JSON.parse(localStorage.getItem('UserInfo') || 'null')
 const usersFromLocalStorage = JSON.parse(localStorage.getItem('users') || '[]')
 
 const initialState: IUserState = {
-	logged: false,
-	userInfo: null,
+	logged: !!userInfoFromLocalStorage,
+	userInfo: userInfoFromLocalStorage,
 	users: usersFromLocalStorage,
 	loading: false,
 	error: null,
@@ -42,23 +43,33 @@ export const userReducer = (
 			return {
 				...state,
 				loading: true,
+				error: null
 			}
 		case USER_LOGIN_SUCCESS:
-			localStorage.setItem('Token', action.payload.token)
+			localStorage.setItem(
+				'UserInfo',
+				JSON.stringify({
+					token: action.payload.token,
+					name: action.payload.name,
+					role: action.payload.role,
+				})
+			)
 			return {
 				...state,
 				loading: false,
+				logged: true,
 				userInfo: action.payload,
+				error: null
 			}
 		case USER_LOGIN_FAILURE:
-			return{
+			return {
 				...state,
 				loading: false,
-				error: action.payload.error
+				error: action.payload.error,
 			}
 		default:
 			return {
-				...state
+				...state,
 			}
 	}
 }

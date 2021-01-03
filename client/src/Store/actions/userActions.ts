@@ -36,9 +36,9 @@ export const addUser = (body: {
 	password: string
 }): ThunkAction<void, IRootState, unknown, Action> => {
 	return async (dispatch) => {
-		dispatch(saveCurrentUser())
-
 		try {
+			dispatch(saveCurrentUser())
+
 			dispatch(loginFetching())
 
 			const { data } = await api.userLogin(body)

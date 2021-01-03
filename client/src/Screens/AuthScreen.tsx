@@ -12,10 +12,7 @@ const useStyles = makeStyles((theme) => ({
 		textDecoration: 'none',
 		color: '#000000',
 	},
-	root: {
-		// display: 'flex',
-		// justifyContent: 'center'
-	},
+	root: {},
 	tabs: {
 		display: 'flex',
 		justifyContent: 'center',
@@ -35,9 +32,9 @@ const AuthScreen = () => {
 		history.push(value === 0 ? '/signin' : '/signup')
 	}
 
-	useEffect(()=>{
-	    setTabValue(location.pathname === '/signin' ? 0 : 1)
-	},[location])
+	useEffect(() => {
+		setTabValue(location.pathname === '/signin' ? 0 : 1)
+	}, [location])
 
 	return (
 		<>

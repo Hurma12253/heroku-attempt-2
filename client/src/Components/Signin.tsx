@@ -1,5 +1,5 @@
-import React from 'react'
-import {Link} from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -9,20 +9,12 @@ import Checkbox from '@material-ui/core/Checkbox'
 import Grid from '@material-ui/core/Grid'
 import Box from '@material-ui/core/Box'
 import Typography from '@material-ui/core/Typography'
+import Alert from '@material-ui/lab/Alert'
+import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
-
-function Copyright() {
-	return (
-		<Typography variant="body2" color="textSecondary" align="center">
-			{'Copyright © '}
-			<Link to='/signin'>
-				HurmaRC
-			</Link>{' '}
-			{new Date().getFullYear()}
-			{'.'}
-		</Typography>
-	)
-}
+import { useSelector, useDispatch } from 'react-redux'
+import { IRootState } from '../Store/reducers/rootReducer'
+import { userLogin } from '../Store/actions/userActions'
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -30,6 +22,7 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
+		position: 'relative'
 	},
 	avatar: {
 		margin: theme.spacing(1),
@@ -42,15 +35,48 @@ const useStyles = makeStyles((theme) => ({
 	submit: {
 		margin: theme.spacing(3, 0, 2),
 	},
+	progress: {
+		position: 'absolute',
+		width: '100%'
+	}
 }))
 
 const Signin = () => {
 	const classes = useStyles()
+	const dispatch = useDispatch()
+	const { loading, error } = useSelector((state: IRootState) => state.user)
+
+	const [email, setEmail] = useState<string>('')
+	const [password, setPassword] = useState<string>('')
+	const [formError, setFormError] = useState<string>('')
+
+	const emailHandler = (e: any) => {
+		setFormError('')
+		setEmail(e.target.value)
+	}
+
+	const passwordHandler = (e: any) => {
+		setFormError('')
+		setPassword(e.target.value)
+	}
+
+	const submitHandler = (e: any) => {
+		e.preventDefault()
+
+		if (!email || !password) {
+			return setFormError('Invalid email or password!')
+		}
+
+		dispatch(userLogin({ login: email, password }))
+	}
 
 	return (
 		<>
 			<CssBaseline />
 			<div className={classes.paper}>
+				{loading && <LinearProgress className={classes.progress} />}
+				{error && <Alert style={{width:'100%'}} severity="error">{error}</Alert>}
+				{formError && <Alert style={{width:'100%'}} severity="error">{formError}</Alert>}
 				<Avatar className={classes.avatar}></Avatar>
 				<Typography component="h1" variant="h5">
 					Sign in
@@ -65,7 +91,8 @@ const Signin = () => {
 						label="Email Address"
 						name="email"
 						autoComplete="email"
-						autoFocus
+						value={email}
+						onChange={emailHandler}
 					/>
 					<TextField
 						variant="outlined"
@@ -77,6 +104,8 @@ const Signin = () => {
 						type="password"
 						id="password"
 						autoComplete="current-password"
+						value={password}
+						onChange={passwordHandler}
 					/>
 					<FormControlLabel
 						control={<Checkbox value="remember" color="primary" />}
@@ -88,14 +117,14 @@ const Signin = () => {
 						variant="contained"
 						color="primary"
 						className={classes.submit}
+						onClick={submitHandler}
+						disabled={loading}
 					>
 						Sign In
 					</Button>
 					<Grid container>
 						<Grid item xs>
-							<Link to="signin">
-								Forgot password?
-							</Link>
+							<Link to="signin">Forgot password?</Link>
 						</Grid>
 						<Grid item>
 							<Link to="/signup">
@@ -109,6 +138,16 @@ const Signin = () => {
 				<Copyright />
 			</Box>
 		</>
+	)
+}
+
+function Copyright() {
+	return (
+		<Typography variant="body2" color="textSecondary" align="center">
+			{'Copyright © '}
+			<Link to="/">HurmaRC</Link> {new Date().getFullYear()}
+			{'.'}
+		</Typography>
 	)
 }
 

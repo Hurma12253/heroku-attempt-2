@@ -10,10 +10,10 @@ class Api {
 	constructor() {
 		this.axios = axios.create(axiosConfig)
 		this.axios.interceptors.request.use(function (config) {
-			const token = JSON.parse(localStorage.getItem('Token') || '')
+			const userInfo = JSON.parse(localStorage.getItem('UserInfo') || 'null')
 
-			if (token) {
-				config.headers.Token = token
+			if (userInfo) {
+				config.headers.Token = userInfo.token
 			}
 
 			return config
