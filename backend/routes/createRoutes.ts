@@ -1,10 +1,11 @@
 import {Express} from 'express'
-import {UserCtrl, AdminCtrl} from '../controllers'
+import {UserCtrl, AdminCtrl, ApiCtrl} from '../controllers'
 import {auth} from '../middlewares/auth'
 
 export const createRoutes = (app: Express) => {
     const UserController = new UserCtrl()
     const AdminController = new AdminCtrl()
+    const ApiController = new ApiCtrl()
 
     app.use(auth)
 
@@ -13,8 +14,10 @@ export const createRoutes = (app: Express) => {
     app.post('/user/signin', UserController.signin)
     app.post('/user/addmember', UserController.addMember)
     app.post('/user/loginmember', UserController.loginMember)
+    app.post('/user/delete', UserController.deleteUser)
     app.put('/user/edituser', UserController.editUser)
-    app.delete('/user/delete', UserController.deleteUser)
 
     app.get('/admin/getallusers', AdminController.getAllUsers)
+    
+    app.get('/randomapilist', ApiController.getApiList)
 }

@@ -5,77 +5,94 @@ import { createToken } from '../helpers/token'
 class UserController {
 	constructor() {}
 
-	signup(req: Request, res: Response) {
-		const { firstname, lastname, patronymic, email, password } = req.body
+	async signup(req: Request, res: Response) {
+		try {
+			const { firstname, lastname, patronymic, email, password } = req.body
 
-		User.findOne({ email })
-			.then((user) => {
-				if (user) {
-					res.status(400).json({
-						message: 'This user already exists!',
-					})
-				} else {
-					User.create({
-						firstname,
-						lastname,
-						patronymic,
-						email,
-						password,
-					})
-						.then((user) => {
-							res.status(200).json({
-								name: user.firstname,
-								role: user.role,
-								token: createToken({
-									_id: user._id,
-									role: user.role,
-								}),
-							})
-						})
-						.catch((error) => {
-							res.status(400).json({ message: error })
-						})
-				}
-			})
-			.catch((err) => {
-				res.status(400).json({ message: err })
-			})
-	}
+		const userExists = await User.findOne({ email })
 
-	signin(req: Request, res: Response) {
-		const { email, password } = req.body
-
-		if (!email || !password) {
-			return res.status(400).json({ message: 'Invalid credentials!' })
+		if(userExists){
+			return res.status(400).json({message: 'This user already exists'})
 		}
 
-		User.findOne({ email })
-			.then((user) => {
-				if (!user) {
-					return res
-						.status(400)
-						.json({ message: 'This user doesnt exists!' })
-				} else {
-					if (!user.matchPassword(password)) {
-						return res
-							.status(400)
-							.json({ message: 'Invalid password!' })
-					} else {
-						res.status(200).json({
-							name: user.firstname,
-							role: user.role,
-							_id: user._id,
-							token: createToken({
-								_id: user._id,
-								role: user.role,
-							}),
-						})
-					}
-				}
+		const createdUser = await User.create({
+			firstname,
+			lastname,
+			patronymic,
+			email,
+			password,
+		})
+
+		if(createdUser){
+			res.status(200).json({
+				firstname: createdUser.firstname,
+				lastname: createdUser.lastname,
+				patronymic: createdUser.patronymic,
+				email: createdUser.email,
+				role: createdUser.role,
+				_id: createdUser._id,
+				token: createToken({
+					_id: createdUser._id,
+					role: createdUser.role,
+				}),
+				users: [],})
+		}
+		
+		} catch (error) {
+			res.status(400).json({ message: error })
+		}
+	}
+
+	async signin(req: Request, res: Response) {
+		try {
+			const { email, password } = req.body
+
+			if (!email || !password) {
+				return res.status(400).json({ message: 'Invalid credentials!' })
+			}
+
+			const user = await User.findOne({ email })
+
+			if (!user) {
+				return res
+					.status(400)
+					.json({ message: 'This user doesnt exists!' })
+			}
+
+			if (!user.matchPassword(password)) {
+				return res.status(400).json({ message: 'Invalid password!' })
+			}
+
+			const users = user.owner
+				? await User.find(
+						{
+							$or: [{ _id: user.owner }, { owner: user.owner }],
+						},
+						'email firstname lastname patronymic role'
+				  )
+				: await User.find(
+						{
+							$or: [{ owner: req._id }, { _id: req._id }],
+						},
+						'email firstname lastname patronymic role'
+				  )
+
+			res.status(200).json({
+				firstname: user.firstname,
+				lastname: user.lastname,
+				patronymic: user.patronymic,
+				email: user.email,
+				role: user.role,
+				_id: user._id,
+				token: createToken({
+					_id: user._id,
+					role: user.role,
+				}),
+				users,
 			})
-			.catch((error) => {
-				res.status(400).json({ message: error })
-			})
+		} catch (error) {
+			res.status(400).json({ message: error })
+		}
 	}
 
 	async addMember(req: Request, res: Response) {
@@ -169,11 +186,9 @@ class UserController {
 			const editingUser = await User.findOne({ _id })
 
 			if (
-				!(
-					currentUser.owner === editingUser._id ||
-					currentUser.owner === editingUser.owner ||
-					currentUser._id === editingUser.owner
-				)
+				currentUser.owner === editingUser._id ||
+				currentUser.owner === editingUser.owner ||
+				currentUser._id === editingUser.owner
 			) {
 				return res.status(403).json({
 					message: 'You dont have permissions to change this user!',
@@ -229,6 +244,21 @@ class UserController {
 				})
 			}
 
+			const users = currentUser.owner
+				? await User.find(
+						{
+							$or: [
+								{ _id: currentUser.owner },
+								{ owner: currentUser.owner },
+							],
+						},
+						'email firstname lastname patronymic role'
+				  )
+				: await User.find(
+						{ $or: [{ owner: req._id }, { _id: req._id }] },
+						'email firstname lastname patronymic role'
+				  )
+
 			res.status(200).json({
 				_id,
 				firstname,
@@ -237,6 +267,7 @@ class UserController {
 				email,
 				role,
 				token: createToken({ _id, role }),
+				users,
 			})
 		} catch (error) {
 			res.status(400).json({ message: error })

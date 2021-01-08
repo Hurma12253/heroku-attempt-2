@@ -14,7 +14,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { IRootState } from '../Store/reducers/rootReducer'
-import { userSignin } from '../Store/actions/userActions'
+import { userSignup } from '../Store/actions/userActions'
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
-		position: 'relative'
+		position: 'relative',
 	},
 	avatar: {
 		margin: theme.spacing(1),
@@ -37,8 +37,8 @@ const useStyles = makeStyles((theme) => ({
 	},
 	progress: {
 		position: 'absolute',
-		width: '100%'
-	}
+		width: '100%',
+	},
 }))
 
 const Signin = () => {
@@ -47,27 +47,27 @@ const Signin = () => {
 	const { loading, error } = useSelector((state: IRootState) => state.user)
 
 	const [email, setEmail] = useState<string>('')
-	const [password, setPassword] = useState<string>('')
-	const [formError, setFormError] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+    const [repPassword, setRepPassword] = useState<string>('')
+	const [firstname, setFirstname] = useState<string>('')
+	const [lastname, setLastname] = useState<string>('')
+	const [patronymic, setPatronymic] = useState<string>('')
 
-	const emailHandler = (e: any) => {
-		setFormError('')
-		setEmail(e.target.value)
-	}
-
-	const passwordHandler = (e: any) => {
-		setFormError('')
-		setPassword(e.target.value)
-	}
+    const emailHandler = (e: any) => setEmail(e.target.value)
+    const passwordHandler = (e: any) => setPassword(e.target.value)
+    const repPasswordHandler = (e: any) => setRepPassword(e.target.value)
+	const firstnameHandler = (e: any) => setFirstname(e.target.value)
+	const lastnameHandler = (e: any) => setLastname(e.target.value)
+	const patronymicHandler = (e: any) => setPatronymic(e.target.value)
 
 	const submitHandler = (e: any) => {
 		e.preventDefault()
 
-		if (!email || !password) {
-			return setFormError('Invalid email or password!')
+		if(!email || !password || !repPassword || !firstname || !lastname || !patronymic){
+			return
 		}
 
-		dispatch(userSignin({ email, password }))
+		dispatch(userSignup({ email, password, firstname, lastname, patronymic }))
 	}
 
 	return (
@@ -75,11 +75,14 @@ const Signin = () => {
 			<CssBaseline />
 			<div className={classes.paper}>
 				{loading && <LinearProgress className={classes.progress} />}
-				{error && <Alert style={{width:'100%'}} severity="error">{error}</Alert>}
-				{formError && <Alert style={{width:'100%'}} severity="error">{formError}</Alert>}
+				{error && (
+					<Alert style={{ width: '100%' }} severity="error">
+						{error}
+					</Alert>
+				)}
 				<Avatar className={classes.avatar}></Avatar>
 				<Typography component="h1" variant="h5">
-					Sign in
+					Sign up
 				</Typography>
 				<form className={classes.form} noValidate>
 					<TextField
@@ -106,6 +109,55 @@ const Signin = () => {
 						autoComplete="current-password"
 						value={password}
 						onChange={passwordHandler}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						name="reppassword"
+						label="Repeat password"
+						type="password"
+						id="reppassword"
+						autoComplete="current-password"
+						value={repPassword}
+						onChange={repPasswordHandler}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						id="firstname"
+						label="firstname"
+						name="firstname"
+						autoComplete="firstname"
+						value={firstname}
+						onChange={firstnameHandler}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						id="lastname"
+						label="lastname"
+						name="lastname"
+						autoComplete="lastname"
+						value={lastname}
+						onChange={lastnameHandler}
+					/>
+					<TextField
+						variant="outlined"
+						margin="normal"
+						required
+						fullWidth
+						id="patronymic"
+						label="patronymic"
+						name="patronymic"
+						autoComplete="patronymic"
+						value={patronymic}
+						onChange={patronymicHandler}
 					/>
 					<FormControlLabel
 						control={<Checkbox value="remember" color="primary" />}

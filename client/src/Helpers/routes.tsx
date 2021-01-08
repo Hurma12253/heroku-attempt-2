@@ -4,6 +4,7 @@ import Header from '../Components/Header'
 import HomeScreen from '../Screens/HomeScreen'
 import AuthScreen from '../Screens/AuthScreen'
 import DashboardScreen from '../Screens/DashboardScreen'
+import ApiCardScreen from '../Screens/ApiCardScreen'
 
 export const useProtectedRoutes = (logged: boolean, admin?: boolean) => {
 	if (!logged) {
@@ -32,6 +33,7 @@ export const useProtectedRoutes = (logged: boolean, admin?: boolean) => {
 					/>
 					<Route exact path="/" component={HomeScreen} />
 					<Route exact path="/dashboard/:page" component={DashboardScreen} />
+					<Route exact path='/dashboard/apicards/:name' component={ApiCardScreen} />
 
 					<Redirect to="/" />
 				</Switch>

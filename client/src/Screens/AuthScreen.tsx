@@ -5,6 +5,7 @@ import Box from '@material-ui/core/Box'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import Signin from '../Components/Signin'
+import Signup from '../Components/Signup'
 import { makeStyles } from '@material-ui/core'
 
 const useStyles = makeStyles((theme) => ({
@@ -46,7 +47,7 @@ const AuthScreen = () => {
 					</Tabs>
 				</Box>
 
-				{tabValue === 0 ? <Signin /> : <h2>Signup</h2>}
+				{tabValue === 0 ? <Signin /> : <Signup />}
 			</Container>
 		</>
 	)
