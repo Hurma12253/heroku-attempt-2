@@ -14,7 +14,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { IRootState } from '../Store/reducers/rootReducer'
-import { userSignup } from '../Store/actions/userActions'
+import { userSignup, registerFailure } from '../Store/actions/userActions'
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -64,7 +64,7 @@ const Signin = () => {
 		e.preventDefault()
 
 		if(!email || !password || !repPassword || !firstname || !lastname || !patronymic){
-			return
+			return dispatch(registerFailure({message: 'Invalid data!'}))
 		}
 
 		dispatch(userSignup({ email, password, firstname, lastname, patronymic }))

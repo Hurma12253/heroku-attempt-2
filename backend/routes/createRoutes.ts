@@ -7,17 +7,15 @@ export const createRoutes = (app: Express) => {
     const AdminController = new AdminCtrl()
     const ApiController = new ApiCtrl()
 
-    app.use(auth)
-
-    app.get('/user/getMembers', UserController.getMembers)
+    app.get('/user/getMembers', auth, UserController.getMembers)
     app.post('/user/signup', UserController.signup)
     app.post('/user/signin', UserController.signin)
-    app.post('/user/addmember', UserController.addMember)
-    app.post('/user/loginmember', UserController.loginMember)
-    app.post('/user/delete', UserController.deleteUser)
-    app.put('/user/edituser', UserController.editUser)
+    app.post('/user/addmember', auth,UserController.addMember)
+    app.post('/user/loginmember', auth,UserController.loginMember)
+    app.post('/user/delete', auth,UserController.deleteUser)
+    app.put('/user/edituser', auth,UserController.editUser)
 
-    app.get('/admin/getallusers', AdminController.getAllUsers)
+    app.get('/admin/getallusers', auth,AdminController.getAllUsers)
     
-    app.get('/randomapilist', ApiController.getApiList)
+    app.get('/randomapilist',auth, ApiController.getApiList)
 }

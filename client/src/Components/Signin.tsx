@@ -14,7 +14,7 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { IRootState } from '../Store/reducers/rootReducer'
-import { userSignin } from '../Store/actions/userActions'
+import { userSignin, loginFailure } from '../Store/actions/userActions'
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -48,15 +48,12 @@ const Signin = () => {
 
 	const [email, setEmail] = useState<string>('')
 	const [password, setPassword] = useState<string>('')
-	const [formError, setFormError] = useState<string>('')
 
 	const emailHandler = (e: any) => {
-		setFormError('')
 		setEmail(e.target.value)
 	}
 
 	const passwordHandler = (e: any) => {
-		setFormError('')
 		setPassword(e.target.value)
 	}
 
@@ -64,7 +61,7 @@ const Signin = () => {
 		e.preventDefault()
 
 		if (!email || !password) {
-			return setFormError('Invalid email or password!')
+			return dispatch(loginFailure({message: 'Invalid data!'}))
 		}
 
 		dispatch(userSignin({ email, password }))
@@ -76,7 +73,6 @@ const Signin = () => {
 			<div className={classes.paper}>
 				{loading && <LinearProgress className={classes.progress} />}
 				{error && <Alert style={{width:'100%'}} severity="error">{error}</Alert>}
-				{formError && <Alert style={{width:'100%'}} severity="error">{formError}</Alert>}
 				<Avatar className={classes.avatar}></Avatar>
 				<Typography component="h1" variant="h5">
 					Sign in

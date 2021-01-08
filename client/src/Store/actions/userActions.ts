@@ -39,6 +39,7 @@ export const userSignin = (body: {
 			const { data } = await api.userSignin(body)
 
 			if (data) {
+				dispatch(logout())
 				dispatch(loginSuccess(data))
 			}
 		} catch (error) {
@@ -83,7 +84,7 @@ type LoginFailure = {
 	}
 }
 
-const loginFailure = (error: any): LoginFailure => ({
+export const loginFailure = (error: any): LoginFailure => ({
 	type: USER_LOGIN_FAILURE,
 	payload: {
 		error: errorHandler(error),
@@ -113,6 +114,7 @@ export const userSignup = (body: {
 			const { data } = await api.userSignup(body)
 
 			if (data) {
+				dispatch(logout())
 				dispatch(registerSuccess(data))
 			}
 		} catch (error) {
@@ -150,7 +152,7 @@ type RegisterFailure = {
 	}
 }
 
-const registerFailure = (error: any): RegisterFailure => ({
+export const registerFailure = (error: any): RegisterFailure => ({
 	type: USER_REGISTER_FAILURE,
 	payload: {
 		error: errorHandler(error),
