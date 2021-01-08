@@ -41,6 +41,6 @@ const start = async () => {
 	}
 }
 
-start()
-
 export const handler = serverless(app)
+
+start()
