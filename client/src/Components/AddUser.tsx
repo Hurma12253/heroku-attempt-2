@@ -6,7 +6,6 @@ import AddButton from './AddButton'
 import Search from './Search'
 import AddUserModal from './AddUserModal'
 import { addMember } from '../Store/actions/userActions'
-import { IUserRegistration } from '../Services/Api'
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -24,12 +23,12 @@ const AddUser = () => {
 	const dispatch = useDispatch()
 	const [modalActive, setModalActive] = useState<boolean>(false)
 
-	const onApplyHandler = (value: IUserRegistration) => {
-		dispatch(addMember(value, onCloseHandler))
-	}
-
 	const onCloseHandler = () => {
 		setModalActive(false)
+	}
+
+	const submitHandler = ({email, password, firstname, lastname, patronymic}, {setSubmitting}) => {
+		dispatch(addMember({email, password, firstname, lastname, patronymic}, onCloseHandler, setSubmitting))
 	}
 
 	return (
@@ -38,8 +37,8 @@ const AddUser = () => {
 			<AddButton onClick={() => setModalActive(true)} />
 			<AddUserModal
 				open={modalActive}
-				onApply={onApplyHandler}
 				onClose={onCloseHandler}
+				submitHandler={submitHandler}
 			/>
 		</Container>
 	)

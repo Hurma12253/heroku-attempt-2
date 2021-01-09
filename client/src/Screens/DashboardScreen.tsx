@@ -75,6 +75,7 @@ const DashboardScreen: React.FC = () => {
 						className={styles.tabs}
 						onChange={onTabChange}
 						value={selectedTab}
+						scrollButtons='on'
 					>
 						<Tab label="Api cards" value={0} />
 						<Tab label="Users" value={1} />

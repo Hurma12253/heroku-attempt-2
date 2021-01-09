@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import TextField from '@material-ui/core/TextField'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import Grid from '@material-ui/core/Grid'
@@ -14,7 +13,15 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { IRootState } from '../Store/reducers/rootReducer'
-import { userSignin, loginFailure } from '../Store/actions/userActions'
+import { userSignin } from '../Store/actions/userActions'
+import { Formik, Form, Field } from 'formik'
+import { TextField } from 'formik-material-ui'
+import * as Yup from 'yup'
+
+const signinSchema = Yup.object().shape({
+	email: Yup.string().required().email('Invalid email!'),
+	password: Yup.string().required().min(3, 'Too short!').max(15, 'Too long!'),
+})
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -22,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
-		position: 'relative'
+		position: 'relative',
 	},
 	avatar: {
 		margin: theme.spacing(1),
@@ -37,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
 	},
 	progress: {
 		position: 'absolute',
-		width: '100%'
-	}
+		width: '100%',
+	},
 }))
 
 const Signin = () => {
@@ -46,25 +53,9 @@ const Signin = () => {
 	const dispatch = useDispatch()
 	const { loading, error } = useSelector((state: IRootState) => state.user)
 
-	const [email, setEmail] = useState<string>('')
-	const [password, setPassword] = useState<string>('')
+	const submitHandler = ({email, password}, {setSubmitting}) => {
 
-	const emailHandler = (e: any) => {
-		setEmail(e.target.value)
-	}
-
-	const passwordHandler = (e: any) => {
-		setPassword(e.target.value)
-	}
-
-	const submitHandler = (e: any) => {
-		e.preventDefault()
-
-		if (!email || !password) {
-			return dispatch(loginFailure({message: 'Invalid data!'}))
-		}
-
-		dispatch(userSignin({ email, password }))
+		dispatch(userSignin({ email, password }, setSubmitting))
 	}
 
 	return (
@@ -72,63 +63,66 @@ const Signin = () => {
 			<CssBaseline />
 			<div className={classes.paper}>
 				{loading && <LinearProgress className={classes.progress} />}
-				{error && <Alert style={{width:'100%'}} severity="error">{error}</Alert>}
+				{error && (
+					<Alert style={{ width: '100%' }} severity="error">
+						{error}
+					</Alert>
+				)}
 				<Avatar className={classes.avatar}></Avatar>
 				<Typography component="h1" variant="h5">
 					Sign in
 				</Typography>
-				<form className={classes.form} noValidate>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						id="email"
-						label="Email Address"
-						name="email"
-						autoComplete="email"
-						value={email}
-						onChange={emailHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						name="password"
-						label="Password"
-						type="password"
-						id="password"
-						autoComplete="current-password"
-						value={password}
-						onChange={passwordHandler}
-					/>
-					<FormControlLabel
-						control={<Checkbox value="remember" color="primary" />}
-						label="Remember me"
-					/>
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="primary"
-						className={classes.submit}
-						onClick={submitHandler}
-						disabled={loading}
-					>
-						Sign In
-					</Button>
-					<Grid container>
-						<Grid item xs>
-							<Link to="signin">Forgot password?</Link>
+				<Formik validationSchema={signinSchema} initialValues={{email: '', password: ''}} onSubmit={submitHandler}>
+					<Form className={classes.form}>
+						<Field
+							variant="outlined"
+							margin="normal"
+							fullWidth
+							id="email"
+							label="Email Address"
+							name="email"
+							autoComplete="email"
+							component={TextField}
+						/>
+						<Field
+							variant="outlined"
+							margin="normal"
+							fullWidth
+							name="password"
+							label="Password"
+							type="password"
+							id="password"
+							autoComplete="current-password"
+							component={TextField}
+						/>
+						<FormControlLabel
+							control={
+								<Checkbox value="remember" color="primary" />
+							}
+							label="Remember me"
+						/>
+						<Button
+							type="submit"
+							fullWidth
+							variant="contained"
+							color="primary"
+							className={classes.submit}
+							disabled={loading}
+						>
+							Sign In
+						</Button>
+						<Grid container>
+							<Grid item xs>
+								<Link to="signin">Forgot password?</Link>
+							</Grid>
+							<Grid item>
+								<Link to="/signup">
+									{"Don't have an account? Sign Up"}
+								</Link>
+							</Grid>
 						</Grid>
-						<Grid item>
-							<Link to="/signup">
-								{"Don't have an account? Sign Up"}
-							</Link>
-						</Grid>
-					</Grid>
-				</form>
+					</Form>
+				</Formik>
 			</div>
 			<Box mt={8}>
 				<Copyright />

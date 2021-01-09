@@ -31,7 +31,7 @@ import api, { IUser, IUserInfo } from '../../Services/Api'
 export const userSignin = (body: {
 	email: string
 	password: string
-}): ThunkAction<void, IRootState, unknown, Action> => {
+}, setSubmitting: any): ThunkAction<void, IRootState, unknown, Action> => {
 	return async (dispatch) => {
 		try {
 			dispatch(loginFetching())
@@ -43,8 +43,8 @@ export const userSignin = (body: {
 				dispatch(loginSuccess(data))
 			}
 		} catch (error) {
-			console.log(error)
 			dispatch(loginFailure(error))
+			setSubmitting(false)
 		}
 	}
 }
@@ -106,7 +106,7 @@ export const userSignup = (body: {
 	firstname: string
 	lastname: string
 	patronymic: string
-}): ThunkAction<void, IRootState, unknown, Action> => {
+}, setSubmitting: any): ThunkAction<void, IRootState, unknown, Action> => {
 	return async (dispatch) => {
 		try {
 			dispatch(registerFetching())
@@ -119,6 +119,7 @@ export const userSignup = (body: {
 			}
 		} catch (error) {
 			dispatch(registerFailure(error))
+			setSubmitting(false)
 		}
 	}
 }
@@ -169,7 +170,8 @@ export const addMember = (
 		lastname: string
 		patronymic: string
 	},
-	cb?: () => void
+	onCloseHandler: () => void,
+	setSubmitting: any
 ): ThunkAction<void, IRootState, unknown, Action> => {
 	return async (dispatch) => {
 		try {
@@ -178,13 +180,11 @@ export const addMember = (
 			const { data } = await api.addMember(body)
 
 			if (data) {
-				if (cb) {
-					cb()
-				}
+				onCloseHandler()
 				dispatch(addMemberSuccess(data))
 			}
 		} catch (error) {
-			console.log(error)
+			setSubmitting(false)
 			dispatch(addMemberFailure(errorHandler(error)))
 		}
 	}
@@ -351,7 +351,7 @@ export const editMember = (body: {
 	lastname: string
 	patronymic: string
 	email: string
-}): ThunkAction<void, IRootState, unknown, Action> => {
+}, onClose: any, setSubmitting: any): ThunkAction<void, IRootState, unknown, Action> => {
 	return async (dispatch) => {
 		try {
 			dispatch(editMemberFetching())
@@ -360,9 +360,12 @@ export const editMember = (body: {
 
 			if (data) {
 				dispatch(editMemberSuccess(data))
+				onClose('')
+				setSubmitting(false)
 			}
 		} catch (error) {
 			dispatch(editMemberFailure(errorHandler(error)))
+			setSubmitting(false)
 		}
 	}
 }

@@ -171,6 +171,7 @@ export const userReducer = (
 				error: null,
 			}
 		case USER_GETMEMBERS_SUCCESS:
+			localStorage.setItem('Users', JSON.stringify(action.payload.users))
 			return {
 				...state,
 				loading: false,

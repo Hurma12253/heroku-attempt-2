@@ -7,37 +7,45 @@ class UserController {
 
 	async signup(req: Request, res: Response) {
 		try {
-			const { firstname, lastname, patronymic, email, password } = req.body
+			const {
+				firstname,
+				lastname,
+				patronymic,
+				email,
+				password,
+			} = req.body
 
-		const userExists = await User.findOne({ email })
+			const userExists = await User.findOne({ email })
 
-		if(userExists){
-			return res.status(400).json({message: 'This user already exists'})
-		}
+			if (userExists) {
+				return res
+					.status(400)
+					.json({ message: 'This user already exists' })
+			}
 
-		const createdUser = await User.create({
-			firstname,
-			lastname,
-			patronymic,
-			email,
-			password,
-		})
+			const createdUser = await User.create({
+				firstname,
+				lastname,
+				patronymic,
+				email,
+				password,
+			})
 
-		if(createdUser){
-			res.status(200).json({
-				firstname: createdUser.firstname,
-				lastname: createdUser.lastname,
-				patronymic: createdUser.patronymic,
-				email: createdUser.email,
-				role: createdUser.role,
-				_id: createdUser._id,
-				token: createToken({
-					_id: createdUser._id,
+			if (createdUser) {
+				res.status(200).json({
+					firstname: createdUser.firstname,
+					lastname: createdUser.lastname,
+					patronymic: createdUser.patronymic,
+					email: createdUser.email,
 					role: createdUser.role,
-				}),
-				users: [],})
-		}
-		
+					_id: createdUser._id,
+					token: createToken({
+						_id: createdUser._id,
+						role: createdUser.role,
+					}),
+					users: [],
+				})
+			}
 		} catch (error) {
 			res.status(400).json({ message: error })
 		}
@@ -193,6 +201,16 @@ class UserController {
 				return res.status(403).json({
 					message: 'You dont have permissions to change this user!',
 				})
+			}
+
+			const userExists = await User.findOne({ email })
+
+			if (userExists) {
+				if (editingUser.email !== email) {
+					return res
+						.status(400)
+						.json({ message: 'This user already exists!' })
+				}
 			}
 
 			const updatedUser = await User.updateOne(

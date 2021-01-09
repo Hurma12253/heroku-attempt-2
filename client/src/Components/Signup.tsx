@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import TextField from '@material-ui/core/TextField'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import Grid from '@material-ui/core/Grid'
@@ -14,7 +13,24 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { useSelector, useDispatch } from 'react-redux'
 import { IRootState } from '../Store/reducers/rootReducer'
-import { userSignup, registerFailure } from '../Store/actions/userActions'
+import { userSignup } from '../Store/actions/userActions'
+import { Formik, Form, Field } from 'formik'
+import { TextField } from 'formik-material-ui'
+import * as Yup from 'yup'
+
+const signupSchema = Yup.object().shape({
+	email: Yup.string().required().email('Invalid email!'),
+	password: Yup.string().required().min(3, 'Too short!').max(15, 'Too long!'),
+	confirmPassword: Yup.string()
+		.required('This field is requried!')
+		.oneOf([Yup.ref('password'), null], 'Password doesnt match!'),
+	firstname: Yup.string().required().min(1, 'Too short').max(20, 'Too long!'),
+	lastname: Yup.string().required().min(1, 'Too short').max(20, 'Too long!'),
+	patronymic: Yup.string()
+		.required()
+		.min(1, 'Too short')
+		.max(20, 'Too long!'),
+})
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -46,28 +62,16 @@ const Signin = () => {
 	const dispatch = useDispatch()
 	const { loading, error } = useSelector((state: IRootState) => state.user)
 
-	const [email, setEmail] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
-    const [repPassword, setRepPassword] = useState<string>('')
-	const [firstname, setFirstname] = useState<string>('')
-	const [lastname, setLastname] = useState<string>('')
-	const [patronymic, setPatronymic] = useState<string>('')
-
-    const emailHandler = (e: any) => setEmail(e.target.value)
-    const passwordHandler = (e: any) => setPassword(e.target.value)
-    const repPasswordHandler = (e: any) => setRepPassword(e.target.value)
-	const firstnameHandler = (e: any) => setFirstname(e.target.value)
-	const lastnameHandler = (e: any) => setLastname(e.target.value)
-	const patronymicHandler = (e: any) => setPatronymic(e.target.value)
-
-	const submitHandler = (e: any) => {
-		e.preventDefault()
-
-		if(!email || !password || !repPassword || !firstname || !lastname || !patronymic){
-			return dispatch(registerFailure({message: 'Invalid data!'}))
-		}
-
-		dispatch(userSignup({ email, password, firstname, lastname, patronymic }))
+	const submitHandler = (
+		{ email, password, firstname, lastname, patronymic },
+		{ setSubmitting }
+	) => {
+		dispatch(
+			userSignup(
+				{ email, password, firstname, lastname, patronymic },
+				setSubmitting
+			)
+		)
 	}
 
 	return (
@@ -84,107 +88,114 @@ const Signin = () => {
 				<Typography component="h1" variant="h5">
 					Sign up
 				</Typography>
-				<form className={classes.form} noValidate>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						id="email"
-						label="Email Address"
-						name="email"
-						autoComplete="email"
-						value={email}
-						onChange={emailHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						name="password"
-						label="Password"
-						type="password"
-						id="password"
-						autoComplete="current-password"
-						value={password}
-						onChange={passwordHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						name="reppassword"
-						label="Repeat password"
-						type="password"
-						id="reppassword"
-						autoComplete="current-password"
-						value={repPassword}
-						onChange={repPasswordHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						id="firstname"
-						label="firstname"
-						name="firstname"
-						autoComplete="firstname"
-						value={firstname}
-						onChange={firstnameHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						id="lastname"
-						label="lastname"
-						name="lastname"
-						autoComplete="lastname"
-						value={lastname}
-						onChange={lastnameHandler}
-					/>
-					<TextField
-						variant="outlined"
-						margin="normal"
-						required
-						fullWidth
-						id="patronymic"
-						label="patronymic"
-						name="patronymic"
-						autoComplete="patronymic"
-						value={patronymic}
-						onChange={patronymicHandler}
-					/>
-					<FormControlLabel
-						control={<Checkbox value="remember" color="primary" />}
-						label="Remember me"
-					/>
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						color="primary"
-						className={classes.submit}
-						onClick={submitHandler}
-						disabled={loading}
-					>
-						Sign In
-					</Button>
-					<Grid container>
-						<Grid item xs>
-							<Link to="signin">Forgot password?</Link>
-						</Grid>
-						<Grid item>
-							<Link to="/signup">
-								{"Don't have an account? Sign Up"}
-							</Link>
-						</Grid>
-					</Grid>
-				</form>
+				<Formik
+					initialValues={{
+						email: '',
+						password: '',
+						confirmPassword: '',
+						firstname: '',
+						lastname: '',
+						patronymic: '',
+					}}
+					validationSchema={signupSchema}
+					onSubmit={submitHandler}
+				>
+					{({ errors, touched }) => (
+						<Form className={classes.form}>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								id="email"
+								label="Email Address"
+								name="email"
+								autoComplete="email"
+								component={TextField}
+							/>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								name="password"
+								label="Password"
+								type="password"
+								id="password"
+								autoComplete="current-password"
+								component={TextField}
+							/>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								name="confirmPassword"
+								label="Confirm password"
+								type="password"
+								id="confirmPassword"
+								autoComplete="current-password"
+								component={TextField}
+							/>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								id="firstname"
+								label="firstname"
+								name="firstname"
+								autoComplete="firstname"
+								component={TextField}
+							/>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								id="lastname"
+								label="lastname"
+								name="lastname"
+								autoComplete="lastname"
+								component={TextField}
+							/>
+							<Field
+								variant="outlined"
+								margin="normal"
+								fullWidth
+								id="patronymic"
+								label="patronymic"
+								name="patronymic"
+								autoComplete="patronymic"
+								component={TextField}
+							/>
+							<FormControlLabel
+								control={
+									<Checkbox
+										value="remember"
+										color="primary"
+									/>
+								}
+								label="Remember me"
+							/>
+							<Button
+								type="submit"
+								fullWidth
+								variant="contained"
+								color="primary"
+								className={classes.submit}
+								disabled={loading}
+							>
+								Sign Up
+							</Button>
+							<Grid container>
+								<Grid item xs>
+									<Link to="signin">Forgot password?</Link>
+								</Grid>
+								<Grid item>
+									<Link to="/signup">
+										{"Don't have an account? Sign Up"}
+									</Link>
+								</Grid>
+							</Grid>
+						</Form>
+					)}
+				</Formik>
 			</div>
 			<Box mt={8}>
 				<Copyright />

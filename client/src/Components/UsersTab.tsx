@@ -10,7 +10,6 @@ import TableCell from '@material-ui/core/TableCell'
 import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import TextField from '@material-ui/core/TextField'
 import IconButton from '@material-ui/core/IconButton'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import Alert from '@material-ui/lab/Alert'
@@ -22,6 +21,19 @@ import {
 	editMember,
 	deleteUser,
 } from '../Store/actions/userActions'
+import { Formik, Form, Field } from 'formik'
+import { TextField } from 'formik-material-ui'
+import * as Yup from 'yup'
+
+const editUserSchema = Yup.object().shape({
+	email: Yup.string().required().email('Invalid email!'),
+	firstname: Yup.string().required().min(1, 'Too short').max(20, 'Too long!'),
+	lastname: Yup.string().required().min(1, 'Too short').max(20, 'Too long!'),
+	patronymic: Yup.string()
+		.required()
+		.min(1, 'Too short')
+		.max(20, 'Too long!'),
+})
 
 const StyledTableCell = withStyles((theme) => ({
 	head: {
@@ -86,11 +98,6 @@ const UsersTab: React.FC = () => {
 	const [lastname, setLastname] = useState<string>('')
 	const [patronymic, setPatronymic] = useState<string>('')
 
-	const emailHandler = (e: any) => setEmail(e.target.value)
-	const firstnameHandler = (e: any) => setFirstname(e.target.value)
-	const lastnameHandler = (e: any) => setLastname(e.target.value)
-	const patronymicHandler = (e: any) => setPatronymic(e.target.value)
-
 	const onEditClickHandler = (row: IUserInfo) => {
 		if (activeRowId) {
 			let res = window.confirm(
@@ -102,12 +109,12 @@ const UsersTab: React.FC = () => {
 			}
 		}
 
-		setActiveRowId(row._id)
-
 		setEmail(row.email)
 		setFirstname(row.firstname)
 		setLastname(row.lastname)
 		setPatronymic(row.patronymic)
+
+		setActiveRowId(row._id)
 	}
 
 	const onDeleteClickHandler = (row: IUserInfo) => {
@@ -128,20 +135,26 @@ const UsersTab: React.FC = () => {
 		}
 	}
 
-	const onAcceptClickHandler = () => {
+	const submitHandler = (
+		{ email, firstname, lastname, patronymic },
+		{ setSubmitting }
+	) => {
 		let res = window.confirm('Are you realy to accept?')
 
 		if (res) {
 			dispatch(
-				editMember({
-					_id: activeRowId,
-					email,
-					firstname,
-					lastname,
-					patronymic,
-				})
+				editMember(
+					{
+						_id: activeRowId,
+						email,
+						firstname,
+						lastname,
+						patronymic,
+					},
+					setActiveRowId,
+					setSubmitting
+				)
 			)
-			setActiveRowId('')
 		}
 	}
 
@@ -151,7 +164,6 @@ const UsersTab: React.FC = () => {
 
 	useEffect(() => {
 		dispatch(getMembers())
-		
 	}, [dispatch, updatedPatch])
 
 	return (
@@ -162,168 +174,275 @@ const UsersTab: React.FC = () => {
 				<Container maxWidth="lg">
 					{error && <Alert severity="error">{error}</Alert>}
 					<TableContainer className={styles.table}>
-						<Table>
-							<TableHead>
-								<TableRow className={styles.tableHeader}>
-									<StyledTableCell>Email</StyledTableCell>
-									<StyledTableCell>Firstname</StyledTableCell>
-									<StyledTableCell>Lastname</StyledTableCell>
-									<StyledTableCell>
-										Patronymic
-									</StyledTableCell>
-									<StyledTableCell>Actions</StyledTableCell>
-								</TableRow>
-							</TableHead>
-							<TransitionGroup component={TableBody}>
-								{users.map((row) => {
-									return (
-										<Transition
-											timeout={400}
-											unmountOnExit
-											key={row._id}
-										>
-											{(state) => (
-												<StyledTableRow
-													className={styles[state]}
-													key={row._id}
-												>
-													<StyledTableCell>
-														{row._id ===
-														activeRowId ? (
-															<TextField
-																label="Email"
-																value={email}
-																onChange={
-																	emailHandler
+						{activeRowId ? (
+							<Formik
+								initialValues={{
+									email,
+									firstname,
+									lastname,
+									patronymic,
+								}}
+								validationSchema={editUserSchema}
+								onSubmit={submitHandler}
+								enableReinitialize
+							>
+								<Form>
+									<Table>
+										<TableHead>
+											<TableRow
+												className={styles.tableHeader}
+											>
+												<StyledTableCell>
+													Email
+												</StyledTableCell>
+												<StyledTableCell>
+													Firstname
+												</StyledTableCell>
+												<StyledTableCell>
+													Lastname
+												</StyledTableCell>
+												<StyledTableCell>
+													Patronymic
+												</StyledTableCell>
+												<StyledTableCell>
+													Actions
+												</StyledTableCell>
+											</TableRow>
+										</TableHead>
+										<TransitionGroup component={TableBody}>
+											{users.map((row) => {
+												return (
+													<Transition
+														timeout={400}
+														unmountOnExit
+														key={row._id}
+													>
+														{(state) => (
+															<StyledTableRow
+																className={
+																	styles[
+																		state
+																	]
 																}
-																multiline
-															/>
-														) : (
-															row.email
+																key={row._id}
+															>
+																<StyledTableCell>
+																	{row._id ===
+																	activeRowId ? (
+																		<Field
+																			component={
+																				TextField
+																			}
+																			name="email"
+																			label="Email"
+																			multiline
+																		/>
+																	) : (
+																		row.email
+																	)}
+																</StyledTableCell>
+																<StyledTableCell>
+																	{row._id ===
+																	activeRowId ? (
+																		<Field
+																			label="Firstname"
+																			component={
+																				TextField
+																			}
+																			name="firstname"
+																			multiline
+																		/>
+																	) : (
+																		row.firstname
+																	)}
+																</StyledTableCell>
+																<StyledTableCell>
+																	{row._id ===
+																	activeRowId ? (
+																		<Field
+																			label="Lastname"
+																			component={
+																				TextField
+																			}
+																			name="lastname"
+																			multiline
+																		/>
+																	) : (
+																		row.lastname
+																	)}
+																</StyledTableCell>
+																<StyledTableCell>
+																	{row._id ===
+																	activeRowId ? (
+																		<Field
+																			label="Patronymic"
+																			component={
+																				TextField
+																			}
+																			name="patronymic"
+																			multiline
+																		/>
+																	) : (
+																		row.patronymic
+																	)}
+																</StyledTableCell>
+																<StyledTableCell>
+																	{row._id ===
+																	activeRowId ? (
+																		<>
+																			<IconButton type="submit">
+																				<img
+																					src="/assets/svg/accept.svg"
+																					alt="accept"
+																					className={
+																						styles.actionIcon
+																					}
+																				/>
+																			</IconButton>
+																			<IconButton
+																				onClick={
+																					onCancelClickHandler
+																				}
+																			>
+																				<img
+																					src="/assets/svg/cancel.svg"
+																					alt="cancel"
+																					className={
+																						styles.actionIcon
+																					}
+																				/>
+																			</IconButton>
+																		</>
+																	) : (
+																		<>
+																			<IconButton
+																				onClick={() =>
+																					onEditClickHandler(
+																						row
+																					)
+																				}
+																			>
+																				<img
+																					className={
+																						styles.actionIcon
+																					}
+																					src="/assets/svg/edit.svg"
+																					alt="edit"
+																				/>
+																			</IconButton>
+																			<IconButton
+																				onClick={() =>
+																					onDeleteClickHandler(
+																						row
+																					)
+																				}
+																			>
+																				<img
+																					src="/assets/svg/delete.svg"
+																					alt="delete"
+																					className={
+																						styles.actionIcon
+																					}
+																				/>
+																			</IconButton>
+																		</>
+																	)}
+																</StyledTableCell>
+															</StyledTableRow>
 														)}
-													</StyledTableCell>
-													<StyledTableCell>
-														{row._id ===
-														activeRowId ? (
-															<TextField
-																label="Firstname"
-																value={
-																	firstname
+													</Transition>
+												)
+											})}
+										</TransitionGroup>
+									</Table>
+								</Form>
+							</Formik>
+						) : (
+							<Table>
+								<TableHead>
+									<TableRow className={styles.tableHeader}>
+										<StyledTableCell>Email</StyledTableCell>
+										<StyledTableCell>
+											Firstname
+										</StyledTableCell>
+										<StyledTableCell>
+											Lastname
+										</StyledTableCell>
+										<StyledTableCell>
+											Patronymic
+										</StyledTableCell>
+										<StyledTableCell>
+											Actions
+										</StyledTableCell>
+									</TableRow>
+								</TableHead>
+								<TransitionGroup component={TableBody}>
+									{users.map((row) => {
+										return (
+											<Transition
+												timeout={400}
+												unmountOnExit
+												key={row._id}
+											>
+												{(state) => (
+													<StyledTableRow
+														className={
+															styles[state]
+														}
+														key={row._id}
+													>
+														<StyledTableCell>
+															{row.email}
+														</StyledTableCell>
+														<StyledTableCell>
+															{row.firstname}
+														</StyledTableCell>
+														<StyledTableCell>
+															{row.lastname}
+														</StyledTableCell>
+														<StyledTableCell>
+															{row.patronymic}
+														</StyledTableCell>
+														<StyledTableCell>
+															<IconButton
+																onClick={() =>
+																	onEditClickHandler(
+																		row
+																	)
 																}
-																onChange={
-																	firstnameHandler
-																}
-																multiline
-															/>
-														) : (
-															row.firstname
-														)}
-													</StyledTableCell>
-													<StyledTableCell>
-														{row._id ===
-														activeRowId ? (
-															<TextField
-																label="Lastname"
-																value={lastname}
-																onChange={
-																	lastnameHandler
-																}
-																multiline
-															/>
-														) : (
-															row.lastname
-														)}
-													</StyledTableCell>
-													<StyledTableCell>
-														{row._id ===
-														activeRowId ? (
-															<TextField
-																label="Patronymic"
-																value={
-																	patronymic
-																}
-																onChange={
-																	patronymicHandler
-																}
-																multiline
-															/>
-														) : (
-															row.patronymic
-														)}
-													</StyledTableCell>
-													<StyledTableCell>
-														{row._id ===
-														activeRowId ? (
-															<>
-																<IconButton
-																	onClick={
-																		onAcceptClickHandler
+															>
+																<img
+																	className={
+																		styles.actionIcon
 																	}
-																>
-																	<img
-																		src="/assets/svg/accept.svg"
-																		alt="accept"
-																		className={
-																			styles.actionIcon
-																		}
-																	/>
-																</IconButton>
-																<IconButton
-																	onClick={
-																		onCancelClickHandler
+																	src="/assets/svg/edit.svg"
+																	alt="edit"
+																/>
+															</IconButton>
+															<IconButton
+																onClick={() =>
+																	onDeleteClickHandler(
+																		row
+																	)
+																}
+															>
+																<img
+																	src="/assets/svg/delete.svg"
+																	alt="delete"
+																	className={
+																		styles.actionIcon
 																	}
-																>
-																	<img
-																		src="/assets/svg/cancel.svg"
-																		alt="cancel"
-																		className={
-																			styles.actionIcon
-																		}
-																	/>
-																</IconButton>
-															</>
-														) : (
-															<>
-																<IconButton
-																	onClick={() =>
-																		onEditClickHandler(
-																			row
-																		)
-																	}
-																>
-																	<img
-																		className={
-																			styles.actionIcon
-																		}
-																		src="/assets/svg/edit.svg"
-																		alt="edit"
-																	/>
-																</IconButton>
-																<IconButton
-																	onClick={() =>
-																		onDeleteClickHandler(
-																			row
-																		)
-																	}
-																>
-																	<img
-																		src="/assets/svg/delete.svg"
-																		alt="delete"
-																		className={
-																			styles.actionIcon
-																		}
-																	/>
-																</IconButton>
-															</>
-														)}
-													</StyledTableCell>
-												</StyledTableRow>
-											)}
-										</Transition>
-									)
-								})}
-							</TransitionGroup>
-						</Table>
+																/>
+															</IconButton>
+														</StyledTableCell>
+													</StyledTableRow>
+												)}
+											</Transition>
+										)
+									})}
+								</TransitionGroup>
+							</Table>
+						)}
 					</TableContainer>
 				</Container>
 			</Paper>

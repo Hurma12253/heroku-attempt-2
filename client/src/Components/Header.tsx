@@ -10,7 +10,7 @@ import ButtonBase from '@material-ui/core/ButtonBase'
 import Avatar from '@material-ui/core/Avatar'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
+import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Collapse from '@material-ui/core/Collapse'
@@ -159,6 +159,7 @@ const Header = () => {
 	}
 
 	const logoutHandler = () => {
+		onDrawerHandler(false)
 		handleUserClose()
 		dispatch(logout())
 	}
@@ -189,10 +190,9 @@ const Header = () => {
 									alt="burger"
 								/>
 							</ButtonBase>
-							<SwipeableDrawer
+							<Drawer
 								className={styles.drawer}
 								onClose={() => onDrawerHandler(false)}
-								onOpen={() => onDrawerHandler(true)}
 								open={isDrawerOpen}
 								anchor="right"
 							>
@@ -236,8 +236,12 @@ const Header = () => {
 											)
 										})}
 									</Collapse>
+									<Divider/>
+									<ListItem onClick={logoutHandler}>
+										Logout
+									</ListItem>
 								</List>
-							</SwipeableDrawer>
+							</Drawer>
 							{users.length > 0 ? (
 								<ButtonBase
 									onClick={handleUsersClick}
