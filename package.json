@@ -1,0 +1,22 @@
+{
+  "name": "attempt",
+  "version": "1.0.0",
+  "description": "The site with simple auth and admin dashboard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build --prefix backend",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hurma12253/admin-dashboard-test-task.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hurma12253/admin-dashboard-test-task/issues"
+  },
+  "homepage": "https://github.com/Hurma12253/admin-dashboard-test-task#readme"
+}
