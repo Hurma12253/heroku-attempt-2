@@ -5,6 +5,7 @@
 		"removeComments": true,
 		"sourceMap": true,
 		"esModuleInterop": true,
+		"noImplicitAny": false,
 		"typeRoots": ["types", "node_modules/@types"]
 	},
 	"files": ["index.ts"],
